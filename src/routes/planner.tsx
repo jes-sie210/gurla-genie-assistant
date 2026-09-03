@@ -47,6 +47,20 @@ const PRIORITY_STYLES: Record<string, string> = {
   Low: "bg-cream text-foreground border-gold/50",
 };
 
+type PlanRequest = {
+  range: "day" | "week";
+  workStart: string;
+  workEnd: string;
+  focusNote: string;
+  tasks: {
+    title: string;
+    deadline: string;
+    durationMinutes: number;
+    priority: string;
+    notes: string;
+  }[];
+};
+
 function Planner() {
   const { tasks, addTask, removeTask, toggleTask } = useTasks();
   const [title, setTitle] = useState("");
@@ -62,8 +76,7 @@ function Planner() {
 
   const planFn = useServerFn(generateSchedule);
   const plan = useMutation({
-    mutationFn: (input: Parameters<typeof generateSchedule>[0]["data"]) =>
-      planFn({ data: input }),
+    mutationFn: (input: PlanRequest) => planFn({ data: input }),
     onError: (error: Error) =>
       toast.error(error.message || "The genie couldn't build a schedule. Please try again."),
   });
