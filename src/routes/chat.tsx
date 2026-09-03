@@ -1,7 +1,7 @@
 import { useChat } from "@ai-sdk/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { DefaultChatTransport } from "ai";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { AppShell, Disclaimer } from "@/components/AppShell";
@@ -48,8 +48,9 @@ const EXAMPLE_PROMPTS = [
 
 function ChatPage() {
   const [input, setInput] = useState("");
+  const transport = useMemo(() => new DefaultChatTransport({ api: "/api/chat" }), []);
   const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
+    transport,
     onError: (error) => toast.error(error.message || "The genie couldn't reply. Please try again."),
   });
 
