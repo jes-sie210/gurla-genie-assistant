@@ -30,7 +30,7 @@ const PlanSchema = z.object({
       end: z.string(),
       title: z.string(),
       priority: z.string(),
-      why: z.string(),
+      why: z.string().nullable().default(""),
     }),
   ),
   watchOuts: z.array(z.string()),
