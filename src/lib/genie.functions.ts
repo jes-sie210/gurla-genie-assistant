@@ -30,7 +30,7 @@ const PlanSchema = z.object({
       end: z.string(),
       title: z.string(),
       priority: z.string(),
-      why: z.string(),
+      why: z.string().nullable().default(""),
     }),
   ),
   watchOuts: z.array(z.string()),
@@ -53,21 +53,33 @@ async function structured<T>(
   prompt: string,
   system: string,
 ): Promise<T> {
+  console.log("[genie] structured() start");
   const result = streamText({
     model: getGenieModel(),
     system,
     prompt,
     output: Output.object({ schema }),
   });
+  console.log("[genie] streamText created");
 
   try {
-    return (await result.output) as T;
+    const out = (await result.output) as T;
+    console.log("[genie] output resolved");
+    return out;
   } catch (error) {
     if (NoObjectGeneratedError.isInstance(error) && error.text) {
       const match = error.text.match(/\{[\s\S]*\}/);
-      if (match) return schema.parse(JSON.parse(match[0]));
+      if (match) {
+        try {
+          return schema.parse(JSON.parse(match[0]));
+        } catch {
+          // fall through to the friendly error below
+        }
+      }
     }
-    throw error;
+    throw new Error(
+      "The genie's answer didn't come back in a usable format. Please try again in a moment.",
+    );
   }
 }
 
@@ -101,7 +113,17 @@ Rules:
 - "why" is one short sentence of reasoning.
 - "encouragement" is one warm, professional sentence of motivation.
 - "strategy" is 2-3 sentences describing how the plan is sequenced.
-- "watchOuts" lists 2-4 realistic risks or overload warnings.`;
+- "watchOuts" lists 2-4 realistic risks or overload warnings.
+
+Return JSON in exactly this shape (every field required, "blocks" is a flat array — one object per time block):
+{
+  "encouragement": "string",
+  "strategy": "string",
+  "blocks": [
+    { "day": "Today", "start": "09:00", "end": "10:30", "title": "Task title", "priority": "High", "why": "string" }
+  ],
+  "watchOuts": ["string"]
+}`;
 
     return await structured(PlanSchema, prompt, GENIE_SYSTEM_PROMPT);
   });
