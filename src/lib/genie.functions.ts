@@ -53,15 +53,19 @@ async function structured<T>(
   prompt: string,
   system: string,
 ): Promise<T> {
+  console.log("[genie] structured() start");
   const result = streamText({
     model: getGenieModel(),
     system,
     prompt,
     output: Output.object({ schema }),
   });
+  console.log("[genie] streamText created");
 
   try {
-    return (await result.output) as T;
+    const out = (await result.output) as T;
+    console.log("[genie] output resolved");
+    return out;
   } catch (error) {
     if (NoObjectGeneratedError.isInstance(error) && error.text) {
       const match = error.text.match(/\{[\s\S]*\}/);
