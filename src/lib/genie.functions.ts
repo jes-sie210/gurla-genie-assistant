@@ -109,7 +109,17 @@ Rules:
 - "why" is one short sentence of reasoning.
 - "encouragement" is one warm, professional sentence of motivation.
 - "strategy" is 2-3 sentences describing how the plan is sequenced.
-- "watchOuts" lists 2-4 realistic risks or overload warnings.`;
+- "watchOuts" lists 2-4 realistic risks or overload warnings.
+
+Return JSON in exactly this shape (every field required, "blocks" is a flat array — one object per time block):
+{
+  "encouragement": "string",
+  "strategy": "string",
+  "blocks": [
+    { "day": "Today", "start": "09:00", "end": "10:30", "title": "Task title", "priority": "High", "why": "string" }
+  ],
+  "watchOuts": ["string"]
+}`;
 
     return await structured(PlanSchema, prompt, GENIE_SYSTEM_PROMPT);
   });
