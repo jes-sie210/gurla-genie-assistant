@@ -65,9 +65,17 @@ async function structured<T>(
   } catch (error) {
     if (NoObjectGeneratedError.isInstance(error) && error.text) {
       const match = error.text.match(/\{[\s\S]*\}/);
-      if (match) return schema.parse(JSON.parse(match[0]));
+      if (match) {
+        try {
+          return schema.parse(JSON.parse(match[0]));
+        } catch {
+          // fall through to the friendly error below
+        }
+      }
     }
-    throw error;
+    throw new Error(
+      "The genie's answer didn't come back in a usable format. Please try again in a moment.",
+    );
   }
 }
 
